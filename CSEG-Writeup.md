@@ -56,10 +56,11 @@ data = scale(data)
 
 EFA requires that the number of factors to be extracted is specified *a-priori*.  It is often not immediately obvious how many factors should be specified.  Many authors have proposed rules over the years (eg. Preacher et al, 2013).  One simple approach (known as the Kaiser criterion) involves looking at the eigenvalues of the covariance matrix of the data, and counting the number above a threshold (typically 1.0).  In Figure 1, there are 6 eigenvalues greater than 1.0 (dashed red line), suggesting there are 6 relevant factors to be extracted.
 
-![Crossplot Data](images/1_eigs.png)
+![](images/1_eigs.png)
+
 **Figure 1** Eigenvalues of covariance matrix. 
 
-The scikit-learn library contains a FactorAnalysis module that can be used to extract the 6 factors.  This is done by creating a factor analysis object and fitting the model to the data.
+The scikit-learn library contains a FactorAnalysis module that can be used to extract the 6 factors.  This is done by creating a factor analysis model and fitting the model to the data.
 
 ```python
 fa_model = FactorAnalysis(n_components = 6)
@@ -69,20 +70,22 @@ factor_data = fa_model.transform(data)
 
 ### Interpreting the factors
 
-The factors can now be examined to interpret the underlying properties they represent.  Figure X shows the *factor loadings* associated with the first factor.  The loading score indicates the correlation between the factor and the observed variable.  In this case, the first factor is associated with high values of Calcite, Dolomite and CaO.  We could interpret this factor as representing the carbonate character of the rock.  Similar interpretations can be given to the other factors by observing their loading scores.
+The factors can now be examined to interpret the underlying properties they represent.  Figure 2 shows the *factor loadings* associated with a factor.  The loading score indicates the correlation between the factor and the observed variables.  In this case, the factor is associated with high values of plagioclase, illite/smectite/mica, pyrite and organic material.    We could interpret this factor as the organic rich clay content.  Similar interpretations can be given to the other factors by observing their loading scores.
 
-![Factor Loadings](images/2_Factor_interp.png)
+![](images/2_Factor_interp.png)
+
 **Figure 2** Factor loadings associated with the 4th extracted factor.
 
 ## Clustering
    
-The factor analysis has reduced the initial collection of 25 XRF features in a reduced set of 7 factors that account for most of the variation in the data.  A logical next step would be using these factors to group the cutting samples by their common geochemical traits, or *geochemical facies*.  Cluster analysis is a suitable approach for assigning a common facies label to similar samples. Clustering attempts to group samples so that those in the same group (or cluster) are more similar than those in other clusters.  Cluster analysis is one class of techniques that fall under the category of *unsupervised* machine learning.  These approaches are used to infer structure from the data itself, without the use of labeled training data to guide the model. 
+The factor analysis has reduced the initial collection of 25 XRF features in a reduced set of 6 factors that account for most of the variation in the data.  A logical next step would be using these factors to group the cutting samples by their common geochemical traits, or *geochemical facies*.  Cluster analysis is a suitable approach for assigning a common facies label to similar samples. Clustering attempts to group samples so that those in the same group (or cluster) are more similar than those in other clusters.  Cluster analysis is one class of techniques that fall under the category of *unsupervised* machine learning.  These approaches are used to infer structure from the data itself, without the use of labeled training data to guide the model. 
 
-The [K-Means](http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html#sklearn.cluster.KMeans) algorithm clusters data by trying to separate samples in $n$ groups of equal variance.  The algorithm locates the optimal cluster centroids by minimizing the distance between each point in a cluster and the closest centroid. The algorithm has three steps.  It initializes by picking locations for the initial $n$ centroids (often random samples from the dataset).  Next, each sample is assigned to one of the $n$ groups according to the nearest centroid.  New centroids are then calculated by finding the mean values of each sample in each group.  This is repeated until the difference between subsequent centroid positions falls below a given threshold.
+The [K-Means](http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html#sklearn.cluster.KMeans) algorithm clusters data by trying to separate samples in $k$ groups of equal variance.  The algorithm locates the optimal cluster centroids by minimizing the distance between each point in a cluster and the closest centroid. The algorithm has three steps.  It initializes by picking locations for the initial $k$ centroids (often random samples from the dataset).  Next, each sample is assigned to one of the $k$ groups according to the nearest centroid.  New centroids are then calculated by finding the mean values of each sample in each group.  This is repeated until the difference between subsequent centroid positions falls below a given threshold.
 
-Similar to EFA, K-Means requires that the number of clusters be specified before running the algorithm.  There are a number of approaches to finding the optimal number of clusters.  The goal is to choose the minimum number of clusters that accurately partition the dataset.  These range from the relatively simple 'elbow method' to more rigorous techniques involving the Bayesian information criterion and optimizing the Gaussian nature of each cluster (Hamerly and Elkan, 2003).  Figure 3 demonstrates the 'elbow method' applied to this dataset.  The sum of the squared distance of each point to the nearest cluster centroid is plotted for an increasing number of clusters.  As the number of clusters is increased, the error decreases as the clusters better fit the data. The elbow of the curve represents the point of diminishing returns where increasing the number of clusters doesn't reduce the error appreciably.  Figure 3 suggests that about 7 clusters would be adequate for this dataset. 
+Similar to EFA, K-Means requires that the number of clusters be specified before running the algorithm.  There are a number of approaches to finding the optimal number of clusters.  The goal is to choose the minimum number of clusters that accurately partition the dataset.  These range from the relatively simple 'elbow method' to more rigorous techniques involving the Bayesian information criterion and optimizing the Gaussian nature of each cluster (Hamerly and Elkan, 2003).  Figure 3 demonstrates the 'elbow method' applied to this dataset.  The sum of the squared distance of each point to the nearest cluster centroid is plotted for an increasing number of clusters.  As the number of clusters is increased, the error decreases as the clusters better fit the data. The elbow of the curve represents the point of diminishing returns where increasing the number of clusters doesn't reduce the error appreciably.  Figure 3 suggests that about 7 clusters would be adequate for this dataset.
 
-![Model Selection](images/3_k_means.png)
+![](images/3_k_means.png)
+
 **Figure 3** Mean squared error vs. number of clusters for the XRF dataset.
 
 The K-means algorithm in `scikit-learn` is used to cluster the reduced dataset.  Similar to the factor analysis, this is done by creating a K-means model and fitting the factor dataset.
@@ -98,19 +101,22 @@ Each sample in the dataset has now been assigned to one of seven clusters.  If w
 
 Figure 4A indicates that Cluster 2 is characterized by a relatively high (and variable) Si/Zr ratio.  Cluster 4 has a high Zr/Al ratio (4B, 4C) and cluster 3 has a high MgO signature.  This can be done for each measurement to build up a geologic interpretation of each cluster.
 
-![Cluster fingerprint](images/4_Cluster_fingerprint.png)
+![](images/4_Cluster_fingerprint.png)
+
 **Figure 4** Distribution of calcite across the clusters.
 
 ## Visualizing results
 
 Now we have organized every cutting measurement into 7 geochemical facies (clusters), we can visualize the classification in a log plot to better understand how the facies transition to one another in the context of a well.  The right column of Figure 5 shows the clusters assigned to each sample using a unique color, indexed by measured depth (MD).  The other columns show 4 of the corresponding geochemical measurements.  Similar plots could be made for the other wells in the dataset and used to identify common intervals.
 
-![Log plot](images/5_logs.png)
+![](images/5_logs.png)
+
 **Figure 5** Log style plot showing 4 geochemical measurements and cluster assigments.
 
-This analysis provides data that can be used for geosteering horizontal wells.  This is useful in areas that lack a distinctive gamma ray signature. Classifing the geochemical facies of a cuttings sample can be used to help pinpoint the location of the well given an exisiting chemo-stratigraphic framework.  To build up this framework, it is helpful to plot the geochemical facies along the well path.  Figure 6 shows the trajectory (TVD vs. MD) for Well 1, with the different facies colored using the same scheme as Figure 5.  This can be used to build a psuedo-vertical profile and help identify specific zones as the well porpoises up and down along its length.
+This analysis provides data that can be used for geosteering horizontal wells.  This is useful in areas that lack a distinctive gamma ray signature. Classifing the geochemical facies of a cuttings sample can be used to help pinpoint the location of the well given an exisiting chemo-stratigraphic framework.  To build up this framework, it is helpful to plot the geochemical facies along the well path.  Figure 6 shows the trajectory (TVD vs. MD) the well, with the different facies colored using the same scheme as Figure 5.  This can be used to build a psuedo-vertical profile and help identify specific zones as the well porpoises up and down along its length.
 
-![Well trajectory](images/6_Well_trajectory.png)
+![](images/6_Well_trajectory.png)
+
 **Figure 6** Geochemical facies assignments plotted along well trajectory.
 
 This tutorial has demonstrated how dimensionality reduction and unsupervised machine learning can be used to understand and analyze XRF measurements of cuttings to determine geochemical facies.  Exploratory factor analysis yields insight into the underlying rock properties that are changing across the reservoir.  K-means clustering is used to organize similar samples into a smaller number of groups that can be interpreted as geochemical facies.  This can be used to correlate formation tops between wells and provide data necessary for geosteering.

@@ -1,5 +1,6 @@
 .ipynb*
 .DS_Store
 *.html
+*.docx
 
 
